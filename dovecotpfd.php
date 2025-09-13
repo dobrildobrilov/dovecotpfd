@@ -43,7 +43,6 @@
 * @version 1.1 (2011-09-08)
 * @author Charlie Orford (charlie.orford@attackplan.net)
 **/
-
 class rcube_dovecotpfd_password
 {
     function save($currpass, $newpass)
@@ -59,34 +58,33 @@ class rcube_dovecotpfd_password
         // (the example below shows how you can support multiple passwd files, one for each domain. If you just use one file, replace sprintf with a simple string of the path to the passwd file)
 	// You may override this in main.inc.php
 	$passwdfile = rcmail::get_instance()->config->get('password_dovecotpfd_passwdfile');
-        if ( empty($passwdfile) ) $passwdfile = sprintf("/home/mail/%s/passwd", $domain);
+        if ( empty($passwdfile) ) $passwdfile = sprintf("/mnt/STORAGE/Maildir/%s/passwd", $domain);
         
         // Build command to call dovecotpfd-setuid wrapper
-        $exec_cmd = sprintf("%s/dovecotpfd-setuid -f=%s -u=%s -s=%s -p=\"%s\" 2>&1", $currdir, escapeshellcmd($passwdfile), escapeshellcmd($username), escapeshellcmd($scheme), escapeshellcmd($newpass));
-        
-        // Call wrapper to change password
+        $exec_cmd = sprintf('%s/dovecotpfd-setuid -f=%s -u=%s -s=%s -p=%s 2>&1', $currdir, escapeshellcmd($passwdfile), escapeshellarg($username), escapeshellarg($scheme), escapeshellarg($newpass));
+	// Call wrapper to change password
         if ($ph = @popen($exec_cmd, "r"))
         {
                 
                 $response = "";
                 while (!feof($ph))
                         $response .= fread($ph, 8192);
-                
-                if (pclose($ph) == 0)
+			$exit = pclose($ph);
+                if ($exit == 0)
                         return PASSWORD_SUCCESS;
 
-                raise_error(array(
+                rcube::raise_error(array(
                         'code' => 600,
                         'type' => 'php',
                         'file' => __FILE__, 'line' => __LINE__,
-                        'message' => "Password plugin: $currdir/dovecotpfd-setuid returned an error"
+			'message' => "Password plugin: $currdir/dovecotpfd-setuid returned an error " . var_export($exit, true)
                         ), true, false);
                 
                 return PASSWORD_ERROR;
                 
         } else {
         
-                raise_error(array(
+                rcube::raise_error(array(
                         'code' => 600,
                         'type' => 'php',
                         'file' => __FILE__, 'line' => __LINE__,
@@ -96,7 +94,6 @@ class rcube_dovecotpfd_password
                 return PASSWORD_ERROR;
                 
         }
-
     }
 }
 ?>

@@ -87,7 +87,7 @@ function check_compatability() {
 function get_hash($dovecotpw, $user, $scheme="SSHA", $new_password) {
 
 	// Build dovecotpw command
-	$exec_cmd = sprintf("%s -u %s -s %s -p \"%s\" 2>&1", escapeshellcmd($dovecotpw), escapeshellcmd($user), escapeshellcmd($scheme), escapeshellcmd($new_password));
+	$exec_cmd = sprintf('%s -u %s -s %s -p %s 2>&1', escapeshellcmd($dovecotpw), escapeshellarg($user), escapeshellarg($scheme), escapeshellarg($new_password));
 		
 	// Try to call dovecotpw
 	if ($ph = @popen($exec_cmd, "r")) {
